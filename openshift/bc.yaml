@@ -1,0 +1,31 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: friends-app
+  namespace: saftybear-dev
+  labels:
+    app: friends-app
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'friends-app:latest'
+  resources: {}
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'java:openjdk-8-el7'
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/henriksimons/MyRepo'
+    contextDir: /test
+  triggers:
+    - type: ImageChange
+      imageChange:
+    - type: ConfigChange
+  runPolicy: Serial
+

@@ -1,0 +1,11 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: friends-app
+  namespace: saftybear-dev
+  labels:
+    app: friends-app
+spec:
+  lookupPolicy:
+    local: false
+

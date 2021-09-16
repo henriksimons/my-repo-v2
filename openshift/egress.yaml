@@ -1,0 +1,20 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: friends-app
+  namespace: saftybear-dev
+  generation: 1
+spec:
+  rules:
+    - host: friends-app-saftybear-dev.apps.sandbox.x8i5.p1.openshiftapps.com
+      http:
+        paths:
+          - path: /api/app/swagger-ui/
+            pathType: Prefix
+            backend:
+              service:
+                name: friends-app
+                port:
+                  number: 443
+status:
+  loadBalancer: {}
