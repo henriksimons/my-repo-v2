@@ -21,19 +21,24 @@ public class PersonService {
         this.personRepository = personRepository;
     }
 
-    public Person createPerson(PersonRequest request) {
+    public PersonServiceResponse createPerson(PersonRequest request) {
+        PersonServiceResponse response = new PersonServiceResponse();
         if (nonNull(request)) {
             if (alreadyExists(request.getSsn())) {
-                Person response = personRepository.save(createNewPersonRequest(request));
-                LOGGER.info("Created new Person with ssn: {}, name: {} {}, age: {}.}", response.getSsn(), response.getFirstName(), response.getLastName(), response.getYearsOfAge());
+
+                Person mongoResponse = personRepository.save(createNewPersonRequest(request));
+
+                response.setObject(mongoResponse);
                 return response;
             }
-            LOGGER.warn("Person with ssn: {} already exists.", request.getSsn());
+            response.setMessage("Person with ssn " + request.getSsn() + " already exists!");
+            return response;
         }
-        return null;
+        response.setMessage("Could not create new person, missing request data.");
+        return response;
     }
 
-    private Person createNewPersonRequest(PersonRequest request){
+    private Person createNewPersonRequest(PersonRequest request) {
         return Person.builder()
                 .withSsn(request.getSsn())
                 .withFirstName(request.getFirstName())

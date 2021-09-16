@@ -47,11 +47,11 @@ public class RestService {
             if (nonNull(request)) {
                 LOGGER.info("Request received, attempting to create Person...");
                 if (nonNull(request.getSsn()) && nonNull(request.getFirstName()) && nonNull(request.getLastName())) {
-                    Person response = personService.createPerson(request);
-                    if (nonNull(response)) {
-                        return ResponseEntity.status(HttpStatus.OK).body("Successfully created person with ssn: " + response.getSsn());
+                    PersonServiceResponse response = personService.createPerson(request);
+                    if (nonNull(response.getObject())) {
+                        return ResponseEntity.status(HttpStatus.OK).body("Successfully created person with ssn: " + request.getSsn());
                     } else
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not create person.");
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not create person. " + response.getMessage());
                 }
                 LOGGER.warn("Required attributes ssn, first name and last name are missing. Can't create new person.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Required body attributes {ssn}, {firstName} and {lastName} are missing. Can't create new person.");
