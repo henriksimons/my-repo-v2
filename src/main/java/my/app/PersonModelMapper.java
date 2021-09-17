@@ -4,8 +4,10 @@ public class PersonModelMapper {
 
     public static PersonModel map(Person person) {
         return PersonModel.builder()
-                .withAge(person.getYearsOfAge())
-                .withName(person.getFirstName())
+                .withFirstName(person.getFirstName())
+                .withLastName(person.getLastName())
+                .withYearsOfAge(person.getYearsOfAge())
+                .withSsn(person.getSsn())
                 .build();
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("persons")
 public class Person {
 
+    //TODO fit to personModel
+
     @Id
     private String ssn;
 

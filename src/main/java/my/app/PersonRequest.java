@@ -2,6 +2,8 @@ package my.app;
 
 public class PersonRequest {
 
+    //TODO fit to personModel
+
     private final String ssn;
     private final String firstName;
     private final String lastName;

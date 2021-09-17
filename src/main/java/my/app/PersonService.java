@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -93,4 +94,26 @@ public class PersonService {
         }
         return null;
     }
+
+    public PersonServiceResponse delete(PersonRequest request) {
+        PersonServiceResponse response = new PersonServiceResponse();
+        if (nonNull(request)) {
+            personRepository.deleteById(request.getSsn());
+            LOGGER.info("Person with ssn {} deleted from database.", request.getSsn());
+
+            cache.delete(request.getSsn());
+            LOGGER.info("Person with ssn {} deleted from cache.", request.getSsn());
+
+            response.setMessage("Person with ssn " + request.getSsn() + "deleted.");
+            return response;
+        }
+        response.setMessage("Missing request, could not delete person.");
+        return response;
+    }
+
+    public List<Person> getAllPersons() {
+        LOGGER.info("Fetching all person from database.");
+        return personRepository.findAll();
+    }
+
 }

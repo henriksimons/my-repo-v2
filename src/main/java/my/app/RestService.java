@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.nonNull;
@@ -34,6 +35,19 @@ public class RestService {
             Optional<Person> response = personService.getPersonById(ssn);
             if (response.isPresent()) {
                 return ResponseEntity.status(HttpStatus.OK).body(PersonModelMapper.map(response.get()));
+            } else
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @RequestMapping(value = "/person", method = RequestMethod.GET)
+    public ResponseEntity<List<Person>> getAllPersons() {
+        try {
+            List<Person> response = personService.getAllPersons();
+            if (nonNull(response) && !response.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body(response);
             } else
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
@@ -79,4 +93,18 @@ public class RestService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @RequestMapping(value = "/person", method = RequestMethod.DELETE)
+    public ResponseEntity<String> delete(@RequestBody PersonRequest request) {
+        if (nonNull(request)) {
+            if (nonNull(request.getSsn())) {
+                personService.delete(request);
+                return ResponseEntity.status(HttpStatus.OK).body("Deleted person with ssn " + request.getSsn());
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Required body attribute {ssn} is missing. Can't delete person.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing request body. Can't create new person.");
+    }
+
+
 }
