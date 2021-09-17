@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
@@ -17,8 +18,12 @@ public class PersonService {
     @Autowired
     private final PersonRepository personRepository;
 
-    public PersonService(PersonRepository personRepository) {
+    @Autowired
+    private final PersonServiceCache cache;
+
+    public PersonService(PersonRepository personRepository, PersonServiceCache cache) {
         this.personRepository = personRepository;
+        this.cache = cache;
     }
 
     public PersonServiceResponse createPerson(PersonRequest request) {
@@ -54,9 +59,23 @@ public class PersonService {
 
     public Optional<Person> getPersonById(String ssn) {
         LOGGER.info("Searching for person with ssn (id): {}", ssn);
-        Optional<Person> person = personRepository.findById(ssn);
-        person.ifPresent(result -> LOGGER.info("Fetched person {}", result.getFirstName()));
-        return person;
+        Person person = isCached(ssn);
+        if (isNull(person)) {
+            Optional<Person> optionalPerson = personRepository.findById(ssn);
+            if (optionalPerson.isPresent()) {
+                LOGGER.info("Fetched person from database {}", optionalPerson.get().getSsn());
+                cache.cache(ssn, optionalPerson.get());
+                LOGGER.info("Caching person with ssn {}", ssn);
+                LOGGER.info("Returning person from database with ssn {}", ssn);
+            }
+            return optionalPerson;
+        }
+        LOGGER.info("Returning person from cache with ssn {}", ssn);
+        return Optional.of(person);
+    }
+
+    private Person isCached(String ssn) {
+        return cache.exists(ssn);
     }
 
     public Person setAge(PersonRequest request) {

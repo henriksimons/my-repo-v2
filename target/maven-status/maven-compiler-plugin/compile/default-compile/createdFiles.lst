@@ -1,11 +1,14 @@
 my\app\PersonModel$Builder.class
 my\app\SpringFoxConfig.class
+my\app\Person$Builder.class
 my\app\PersonService.class
 my\app\PersonRepository.class
+my\app\PersonServiceCache.class
 my\app\RestService.class
 my\app\ResponseModel.class
 my\app\PersonModel.class
 my\app\PersonModelMapper.class
+my\app\PersonServiceResponse.class
 my\app\ResponseModel$1.class
 my\app\ResponseModel$Builder.class
 my\app\Person.class
