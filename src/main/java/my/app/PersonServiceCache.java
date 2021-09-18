@@ -1,5 +1,6 @@
 package my.app;
 
+import my.app.mongo.Person;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;

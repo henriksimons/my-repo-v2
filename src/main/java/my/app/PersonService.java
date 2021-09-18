@@ -1,5 +1,8 @@
 package my.app;
 
+import my.app.api.PersonRequest;
+import my.app.mongo.Person;
+import my.app.mongo.PersonRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import static java.util.Objects.*;
 
 @Service
 public class PersonService {
@@ -30,13 +32,13 @@ public class PersonService {
     public PersonServiceResponse createPerson(PersonRequest request) {
         PersonServiceResponse response = new PersonServiceResponse();
         if (nonNull(request)) {
-            if (alreadyExists(request.getSsn())) {
-
+            if (!alreadyExists(request.getSsn())) {
                 Person mongoResponse = personRepository.save(createNewPersonRequest(request));
-
+                LOGGER.info("New person with ssn {} created", request.getSsn());
                 response.setObject(mongoResponse);
                 return response;
             }
+            LOGGER.info("Person with ssn {} already exists!", request.getSsn());
             response.setMessage("Person with ssn " + request.getSsn() + " already exists!");
             return response;
         }
@@ -46,16 +48,19 @@ public class PersonService {
 
     private Person createNewPersonRequest(PersonRequest request) {
         return Person.builder()
-                .withSsn(request.getSsn())
+                .withAddress(request.getAddress())
+                .withCity(request.getCity())
                 .withFirstName(request.getFirstName())
                 .withLastName(request.getLastName())
-                .withYearsOfAge(request.getYearsOfAge())
+                .withPhoneNumber(request.getPhoneNumber())
+                .withPostalCode(request.getPostalCode())
+                .withSsn(request.getSsn())
                 .build();
     }
 
 
     private boolean alreadyExists(String ssn) {
-        return !getPersonById(ssn).isPresent();
+        return getPersonById(ssn).isPresent();
     }
 
     public Optional<Person> getPersonById(String ssn) {
@@ -68,8 +73,10 @@ public class PersonService {
                 cache.cache(ssn, optionalPerson.get());
                 LOGGER.info("Caching person with ssn {}", ssn);
                 LOGGER.info("Returning person from database with ssn {}", ssn);
+                return optionalPerson;
             }
-            return optionalPerson;
+            LOGGER.info("Could not find person with ssn {}", ssn);
+            return Optional.empty();
         }
         LOGGER.info("Returning person from cache with ssn {}", ssn);
         return Optional.of(person);
@@ -79,20 +86,65 @@ public class PersonService {
         return cache.exists(ssn);
     }
 
-    public Person setAge(PersonRequest request) {
+    public PersonServiceResponse updatePerson(PersonRequest request) {
+        PersonServiceResponse response = new PersonServiceResponse();
         if (nonNull(request)) {
-            int age = request.getYearsOfAge();
-            String ssn = request.getSsn();
-            Optional<Person> personResult = getPersonById(ssn);
-            if (personResult.isPresent()) {
-                Person person = personResult.get();
-                int previousAge = person.getYearsOfAge();
-                person.setYearsOfAge(age);
-                LOGGER.info("Updating age for person {} with ssn {} from {} to {}", person.getFirstName(), person.getSsn(), previousAge, person.getYearsOfAge());
-                return personRepository.save(person);
+            Person suggestedPerson = Person.builder()
+                    .withAddress(request.getAddress())
+                    .withCity(request.getCity())
+                    .withFirstName(request.getFirstName())
+                    .withLastName(request.getLastName())
+                    .withPhoneNumber(request.getPhoneNumber())
+                    .withPostalCode(request.getPostalCode())
+                    .withSsn(request.getSsn())
+                    .build();
+            Optional<Person> existing = getPersonById(suggestedPerson.getSsn());
+
+            if (existing.isPresent()) {
+                Person updatedPerson = compareAndSetFinalRequest(suggestedPerson, existing.get());
+                LOGGER.info("Updating person {}...", existing.get().getSsn());
+                response.setObject(personRepository.save(updatedPerson));
+                if (nonNull(response.getObject())) {
+                    LOGGER.info("Successfully updated person {}", existing.get().getSsn());
+                }
+                response.setMessage("Updated person with ssn " + request.getSsn() + ".");
+                return response;
             }
+
+            response.setMessage("Can not update person with ssn " + request.getSsn() + " because it does not exist.");
+            return response;
         }
-        return null;
+        response.setMessage("Request is missing. Can not update person with ssn");
+        return response;
+    }
+
+    private Person compareAndSetFinalRequest(Person suggested, Person existing) {
+
+        if (nonNull(suggested.getAddress())) {
+            LOGGER.info("Changing address from {} to {}", existing.getAddress(), suggested.getAddress());
+            existing.setAddress(suggested.getAddress());
+        }
+        if (nonNull(suggested.getCity())) {
+            LOGGER.info("Changing city from {} to {}", existing.getCity(), suggested.getCity());
+            existing.setCity(suggested.getCity());
+        }
+        if (nonNull(suggested.getFirstName())) {
+            LOGGER.info("Changing first name from {} to {}", existing.getFirstName(), suggested.getFirstName());
+            existing.setFirstName(suggested.getFirstName());
+        }
+        if (nonNull(suggested.getLastName())) {
+            LOGGER.info("Changing last name from {} to {}", existing.getLastName(), suggested.getLastName());
+            existing.setLastName(suggested.getLastName());
+        }
+        if (nonNull(suggested.getPostalCode())) {
+            LOGGER.info("Changing postal code from {} to {}", existing.getPostalCode(), suggested.getPostalCode());
+            existing.setPostalCode(suggested.getPostalCode());
+        }
+        if (nonNull(suggested.getPhoneNumber())) {
+            LOGGER.info("Changing phone number from {} to {}", existing.getPhoneNumber(), suggested.getPhoneNumber());
+            existing.setPhoneNumber(suggested.getPhoneNumber());
+        }
+        return existing;
     }
 
     public PersonServiceResponse delete(PersonRequest request) {
@@ -112,8 +164,9 @@ public class PersonService {
     }
 
     public List<Person> getAllPersons() {
-        LOGGER.info("Fetching all person from database.");
-        return personRepository.findAll();
+        List<Person> allPersons = personRepository.findAll();
+        LOGGER.info("Fetching all {} person from database.", allPersons.size());
+        return allPersons;
     }
 
 }

@@ -1,5 +1,7 @@
-package my.app;
+package my.app.api;
 
+import my.app.*;
+import my.app.mongo.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,13 +45,13 @@ public class RestService {
     }
 
     @RequestMapping(value = "/person", method = RequestMethod.GET)
-    public ResponseEntity<List<Person>> getAllPersons() {
+    public ResponseEntity getAllPersons() {
         try {
             List<Person> response = personService.getAllPersons();
             if (nonNull(response) && !response.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body(response);
             } else
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.OK).body("Database currently holds " + response.size() + " persons.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -73,20 +75,20 @@ public class RestService {
             LOGGER.warn("Missing request body. Can't create new person.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing request body. Can't create new person.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR: " + e);
         }
     }
 
     @RequestMapping(value = "/person", method = RequestMethod.PUT)
-    public ResponseEntity<String> updateAge(@RequestBody PersonRequest request) {
+    public ResponseEntity<String> updatePerson(@RequestBody PersonRequest request) {
         try {
             if (nonNull(request)) {
-                LOGGER.info("Request received, attempting to create Person.");
-                Person response = personService.setAge(request);
-                if (nonNull(response)) {
-                    return ResponseEntity.status(HttpStatus.OK).body("Successfully created person: " + response);
+                LOGGER.info("Request received, attempting to update Person.");
+                PersonServiceResponse response = personService.updatePerson(request);
+                if (nonNull(response.getObject())) {
+                    return ResponseEntity.status(HttpStatus.OK).body("Successfully updated person: " + request.getSsn());
                 } else
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not create person.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not update person. " + response.getMessage());
             }
             return null;
         } catch (Exception e) {

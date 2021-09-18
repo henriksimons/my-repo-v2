@@ -1,4 +1,4 @@
-package my.app;
+package my.app.api;
 
 public class PersonModel {
 
@@ -7,7 +7,7 @@ public class PersonModel {
     private String firstName;
     private String lastName;
     private String phoneNumber; //TODO PhoneNumber object containing multiple addresses
-    private int postalCode;
+    private Integer postalCode;
     private String ssn;
     private int yearsOfAge; //TODO Automatic calculation
 
@@ -20,7 +20,6 @@ public class PersonModel {
         this.postalCode = builder.postalCode;
         this.ssn = builder.ssn;
         this.yearsOfAge = builder.yearsOfAge;
-
     }
 
     public static Builder builder() {
@@ -34,7 +33,7 @@ public class PersonModel {
         private String firstName;
         private String lastName;
         private String phoneNumber;
-        private int postalCode;
+        private Integer postalCode;
         private String ssn;
         private int yearsOfAge;
 
@@ -67,7 +66,7 @@ public class PersonModel {
             return this;
         }
 
-        public Builder withPostalCode(int postalCode) {
+        public Builder withPostalCode(Integer postalCode) {
             this.postalCode = postalCode;
             return this;
         }
@@ -123,11 +122,11 @@ public class PersonModel {
         this.phoneNumber = phoneNumber;
     }
 
-    public int getPostalCode() {
+    public Integer getPostalCode() {
         return postalCode;
     }
 
-    public void setPostalCode(int postalCode) {
+    public void setPostalCode(Integer postalCode) {
         this.postalCode = postalCode;
     }
 

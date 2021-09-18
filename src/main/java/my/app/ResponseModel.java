@@ -1,5 +1,7 @@
 package my.app;
 
+import my.app.api.PersonModel;
+
 public class ResponseModel {
 
     private String message;
